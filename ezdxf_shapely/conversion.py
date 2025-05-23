@@ -165,6 +165,7 @@ def convert_circle(circle: entities.Circle, degrees_per_segment: float = 1) -> s
     pts = utils.arc_points(
         0, 2 * np.pi, circle.dxf.radius, [circle.dxf.center.x, circle.dxf.center.y], degrees_per_segment
     )
+    pts[-1, :] = pts[0, :]  # Force the endpoint to match the startpoint. Numerical issues can make them be a little mismatched
     return sg.LineString(pts)
 
 def convert_all_generator(
