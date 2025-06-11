@@ -28,7 +28,7 @@ dependencies = [
     "ezdxf",
     "numpy",
     "shapely",
-    "geomdl"
+    "geomdl",
 ]
 
 [project.urls]
