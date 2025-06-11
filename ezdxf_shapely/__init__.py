@@ -7,7 +7,12 @@ from ezdxf_shapely.conversion import (
     convert_line,
     convert_lwpolyline,
 )
-from ezdxf_shapely.sanitization import coerce_line_ends, polygonize, centralize, line_merge
+from ezdxf_shapely.sanitization import (
+    coerce_line_ends,
+    polygonize,
+    centralize,
+    line_merge,
+)
 
 __all__ = [
     "VERSION",
