@@ -1,7 +1,5 @@
 from collections.abc import Iterable
 
-import numba
-import numba.types as nbt
 import numpy as np
 import shapely
 from shapely import ops
@@ -19,13 +17,17 @@ def _is_near(a: NDArray, b: NDArray, dist: float) -> bool:
 def _connect_path(a: NDArray, b: NDArray, dist: float) -> NDArray | None:
     """If an end point of B is within distance of an endpoint of A then modify A by connecting B to it"""
     if _is_near(a[0], b[0], dist):
-        return np.vstack((a[::-1], b[1:]))  # connect reversed A to B (minus coinciding point)
+        return np.vstack(
+            (a[::-1], b[1:])
+        )  # connect reversed A to B (minus coinciding point)
     if _is_near(a[0], b[-1], dist):
         return np.vstack((b[:-1], a))
     if _is_near(a[-1], b[0], dist):
         return np.vstack((a[:-1], b))
     if _is_near(a[-1], b[-1], dist):
-        return np.vstack((a[:-1], b[::-1]))  # connect A to reversed B (minus coinciding point)
+        return np.vstack(
+            (a[:-1], b[::-1])
+        )  # connect A to reversed B (minus coinciding point)
     return None
 
 
@@ -43,7 +45,9 @@ def _build_single_path(lines: list[NDArray], distance: float) -> NDArray:
                 path = result
         # remove merged lines from future consideration
         if len(shouldDelete) > 0:
-            for idx in reversed(shouldDelete):  # Delete in reverse order (so that earlier indices to delete aren't invalidated).
+            for idx in reversed(
+                shouldDelete
+            ):  # Delete in reverse order (so that earlier indices to delete aren't invalidated).
                 del lines[idx]
         else:
             # We didn't find anything to connect, we're done
@@ -65,7 +69,9 @@ def _merge_with_tolerance(lines: list[NDArray], distance: float) -> list[NDArray
     return out
 
 
-def coerce_line_ends(geoms: Iterable[shapely.LineString], distance: float = 1e-8) -> list[shapely.LineString]:
+def coerce_line_ends(
+    geoms: Iterable[shapely.LineString], distance: float = 1e-8
+) -> list[shapely.LineString]:
     """
     Coerce nearby line ends to the exact same point.
 
@@ -74,13 +80,15 @@ def coerce_line_ends(geoms: Iterable[shapely.LineString], distance: float = 1e-8
 
     :returns: the merged line strings with coerced ends (fresh instances)
     """
-    lines = [np.array(l.coords) for l in geoms]
+    lines = [np.array(line.coords) for line in geoms]
     merged = _merge_with_tolerance(lines, distance)
     return [shapely.LineString(m) for m in merged]
 
 
 def polygonize(
-    geoms: Iterable[shapely.LineString], coercion_distance: float | None = 1e-8, simplify=True
+    geoms: Iterable[shapely.LineString],
+    coercion_distance: float | None = 1e-8,
+    simplify=True,
 ) -> list[shapely.Polygon]:
     """
     Create polygons from the given line strings.
@@ -107,7 +115,10 @@ def polygonize(
 
 
 def line_merge(
-    geoms: Iterable[shapely.LineString], coerce_ends=True, coercion_distance=1e-8, simplify=True
+    geoms: Iterable[shapely.LineString],
+    coerce_ends=True,
+    coercion_distance=1e-8,
+    simplify=True,
 ) -> shapely.LineString | shapely.MultiLineString:
     """
     Create merged line strings from the given partial line strings.
@@ -138,7 +149,9 @@ def line_merge(
     return merged
 
 
-def centralize(geoms: Iterable[shapely.Geometry] | shapely.Geometry) -> list[shapely.Geometry]:
+def centralize(
+    geoms: Iterable[shapely.Geometry] | shapely.Geometry,
+) -> list[shapely.Geometry]:
     """
     Translate all given geometries so that their centroid is in the origin (0, 0).
     Translation is done for each independently.
@@ -150,4 +163,6 @@ def centralize(geoms: Iterable[shapely.Geometry] | shapely.Geometry) -> list[sha
     """
     if not isinstance(geoms, Iterable):
         geoms = [geoms]
-    return [affinity.translate(l, -l.centroid.x, -l.centroid.y) for l in geoms]
+    return [
+        affinity.translate(geom, -geom.centroid.x, -geom.centroid.y) for geom in geoms
+    ]

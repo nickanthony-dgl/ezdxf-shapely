@@ -23,7 +23,10 @@ def test_centralize(geom):
     "geoms",
     [
         [sg.LineString([(0, 0), (1, 1)]), sg.LineString([(1, 1), (2, 2)])],
-        [sg.LineString([(0, 0), (1, 1)]), affinity.translate(sg.LineString([(1, 1), (2, 2)]), 1e-9)],
+        [
+            sg.LineString([(0, 0), (1, 1)]),
+            affinity.translate(sg.LineString([(1, 1), (2, 2)]), 1e-9),
+        ],
     ],
 )
 def test_line_merge(geoms):

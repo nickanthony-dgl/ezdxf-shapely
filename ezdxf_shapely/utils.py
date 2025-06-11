@@ -77,7 +77,11 @@ def distance(p1: list[float], p2: list[float]) -> float:
 
 
 def arc_points(
-    start_angle: float, end_angle: float, radius: float, center: list[float], degrees_per_segment: float
+    start_angle: float,
+    end_angle: float,
+    radius: float,
+    center: list[float],
+    degrees_per_segment: float,
 ) -> np.ndarray:
     """
     Coordinates of an arcs (for approximation as a polyline)
@@ -93,8 +97,12 @@ def arc_points(
         list: 2D list of points as [x,y]
     """
 
-    n = abs(int((end_angle - start_angle) / math.radians(degrees_per_segment)))  # number of segments
-    n = max(n, 2)  # We want to always include the end points, even if abs(end_angle - start_angle) < degrees_per_segment
+    n = abs(
+        int((end_angle - start_angle) / math.radians(degrees_per_segment))
+    )  # number of segments
+    n = max(
+        n, 2
+    )  # We want to always include the end points, even if abs(end_angle - start_angle) < degrees_per_segment
     theta = np.linspace(start_angle, end_angle, n)
 
     x = center[0] + radius * np.cos(theta)
@@ -103,7 +111,9 @@ def arc_points(
     return np.column_stack([x, y])
 
 
-def arc_points_from_bulge(p1: list[float], p2: list[float], b: float, degrees_per_segment: float):
+def arc_points_from_bulge(
+    p1: list[float], p2: list[float], b: float, degrees_per_segment: float
+):
     """
     http://darrenirvine.blogspot.com/2015/08/polylines-radius-bulge-turnaround.html
 

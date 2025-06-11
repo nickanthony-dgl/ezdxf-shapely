@@ -20,7 +20,9 @@ __all__ = [
 ]
 
 
-def convert_2d_polyline(polyline: entities.Polyline, degrees_per_segment: float = 1) -> sg.LineString:
+def convert_2d_polyline(
+    polyline: entities.Polyline, degrees_per_segment: float = 1
+) -> sg.LineString:
     """
     Convert a DXF polyline to a shapely line string.
 
@@ -53,7 +55,9 @@ def convert_2d_polyline(polyline: entities.Polyline, degrees_per_segment: float 
     return sg.LinearRing(xy) if polyline.is_closed else sg.LineString(xy)
 
 
-def convert_lwpolyline(polyline: entities.LWPolyline, degrees_per_segment: float = 1) -> sg.LineString:
+def convert_lwpolyline(
+    polyline: entities.LWPolyline, degrees_per_segment: float = 1
+) -> sg.LineString:
     """
     Convert a DXF lightweight polyline to a shapely line string.
 
@@ -130,7 +134,9 @@ def convert_line(line: entities.Line) -> sg.LineString:
 
     :returns: a line string
     """
-    return sg.LineString([(line.dxf.start.x, line.dxf.start.y), (line.dxf.end.x, line.dxf.end.y)])
+    return sg.LineString(
+        [(line.dxf.start.x, line.dxf.start.y), (line.dxf.end.x, line.dxf.end.y)]
+    )
 
 
 def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineString:
@@ -148,12 +154,19 @@ def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineStr
         end_angle += 2 * math.pi
 
     pts = utils.arc_points(
-        start_angle, end_angle, arc.dxf.radius, [arc.dxf.center.x, arc.dxf.center.y], degrees_per_segment
+        start_angle,
+        end_angle,
+        arc.dxf.radius,
+        [arc.dxf.center.x, arc.dxf.center.y],
+        degrees_per_segment,
     )
 
     return sg.LineString(pts)
 
-def convert_circle(circle: entities.Circle, degrees_per_segment: float = 1) -> sg.LineString:
+
+def convert_circle(
+    circle: entities.Circle, degrees_per_segment: float = 1
+) -> sg.LineString:
     """
     Convert a DXF circuel to a shapely line string.
 
@@ -163,13 +176,22 @@ def convert_circle(circle: entities.Circle, degrees_per_segment: float = 1) -> s
     :returns: a line string
     """
     pts = utils.arc_points(
-        0, 2 * np.pi, circle.dxf.radius, [circle.dxf.center.x, circle.dxf.center.y], degrees_per_segment
+        0,
+        2 * np.pi,
+        circle.dxf.radius,
+        [circle.dxf.center.x, circle.dxf.center.y],
+        degrees_per_segment,
     )
-    pts[-1, :] = pts[0, :]  # Force the endpoint to match the startpoint. Numerical issues can make them be a little mismatched
+    pts[-1, :] = pts[
+        0, :
+    ]  # Force the endpoint to match the startpoint. Numerical issues can make them be a little mismatched
     return sg.LineString(pts)
 
+
 def convert_all_generator(
-    dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
+    dxf_entities: Iterable[entities.DXFGraphic],
+    spline_delta=0.1,
+    degrees_per_segment: float = 1,
 ) -> Iterable[sg.LineString]:
     """
     Convert a collection of DXF entities to shapely line strings.
@@ -183,7 +205,9 @@ def convert_all_generator(
     """
     for e in dxf_entities:
         match e:
-            case entities.Spline() as s if e.dxf.flags >= ezdxf.lldxf.const.PLANAR_SPLINE:
+            case entities.Spline() as s if (
+                e.dxf.flags >= ezdxf.lldxf.const.PLANAR_SPLINE
+            ):
                 yield convert_2d_spline(s, delta=spline_delta)
             case entities.Polyline() as pl if pl.get_mode() == "AcDb2dPolyline":
                 yield convert_2d_polyline(pl, degrees_per_segment=degrees_per_segment)
@@ -201,7 +225,9 @@ def convert_all_generator(
 
 
 def convert_all(
-    dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
+    dxf_entities: Iterable[entities.DXFGraphic],
+    spline_delta=0.1,
+    degrees_per_segment: float = 1,
 ) -> list[sg.LineString]:
     """
     Convert a collection of DXF entities to shapely line strings.
