@@ -22,26 +22,26 @@ def coerce_line_ends(geoms: Iterable[sg.LineString], distance: float = 1e-8) -> 
 
     geoms = list(geoms)
     for i in range(len(geoms)):
-        ls1 = geoms[i]
-        fp_1 = sg.Point(ls1.coords[0])  # startpoint
-        lp_1 = sg.Point(ls1.coords[-1])  # endpoint
+        line_1 = geoms[i]
+        first_point_1 = sg.Point(line_1.coords[0])  # startpoint
+        last_point_1 = sg.Point(line_1.coords[-1])  # endpoint
 
         for j in range(i + 1, len(geoms)):
-            ls2 = geoms[j]
-            fp_2 = sg.Point(ls2.coords[0])
-            lp_2 = sg.Point(ls2.coords[-1])
-            df_1_2 = fp_1.distance(fp_2)
-            dm_1_2 = fp_1.distance(lp_2)
-            dm_2_1 = lp_1.distance(fp_2)
-            dl_1_2 = lp_1.distance(lp_2)
-            if 0 < df_1_2 < distance:
-                geoms[j] = sg.LineString([ls1.coords[0]] + ls2.coords[1:])
-            if 0 < dm_1_2 < distance:
-                geoms[j] = sg.LineString(ls2.coords[:-1] + [ls1.coords[0]])
-            if 0 < dm_2_1 < distance:
-                geoms[j] = sg.LineString([ls1.coords[-1]] + ls2.coords[1:])
-            if 0 < dl_1_2 < distance:
-                geoms[j] = sg.LineString(ls2.coords[:-1] + [ls1.coords[-1]])
+            line_2 = geoms[j]
+            first_point_2 = sg.Point(line_2.coords[0])
+            last_point_2 = sg.Point(line_2.coords[-1])
+            distance_first_points = first_point_1.distance(first_point_2)
+            distance_mixed_1 = first_point_1.distance(last_point_2)
+            distance_mixed_2 = last_point_1.distance(first_point_2)
+            dist_last_points = last_point_1.distance(last_point_2)
+            if 0 < distance_first_points < distance:
+                geoms[j] = sg.LineString([line_1.coords[0]] + line_2.coords[1:])
+            if 0 < distance_mixed_1 < distance:
+                geoms[j] = sg.LineString(line_2.coords[:-1] + [line_1.coords[0]])
+            if 0 < distance_mixed_2 < distance:
+                geoms[j] = sg.LineString([line_1.coords[-1]] + line_2.coords[1:])
+            if 0 < dist_last_points < distance:
+                geoms[j] = sg.LineString(line_2.coords[:-1] + [line_1.coords[-1]])
     return geoms
 
 
@@ -58,10 +58,15 @@ def polygonize(
 
     :returns: a list of created polygons
     """
-    merged = shapely.line_merge(geoms)
-    if coercion_distance is not None:
-        geoms = coerce_line_ends(merged, coercion_distance)
-    polygons = list(ops.polygonize(geoms))
+    merged = ops.linemerge(geoms)
+    if isinstance(merged, shapely.LineString):
+        # The lines were already merged to a single line
+        polygons = list(ops.polygonize(merged))
+    else:
+        assert isinstance(merged, shapely.MultiLineString)
+        if coercion_distance is not None:
+            merged = coerce_line_ends(list(merged.geoms), coercion_distance)
+        polygons = list(ops.polygonize(merged))
     if simplify:
         polygons = [p.simplify(0) for p in polygons]
     return polygons
